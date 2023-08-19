@@ -1,7 +1,7 @@
 import streamlit as st
 import datetime as dt
 
-st.title("Goals Tracker")
+st.title("TaskMuse")
 
 if 'checkboxes' not in st.session_state:
     st.session_state.checkboxes = []
