@@ -2,10 +2,8 @@ import streamlit as st
 import datetime as dt
 import sqlite3
 
-month = dt.datetime.now().strftime('%B')
-left_co, cent_co,last_co = st.columns(3)
-with cent_co:
-    st.title(f"{month}")
+month, year = dt.datetime.now().strftime('%B'), dt.datetime.now().strftime('%Y')
+st.title(f"{month}-{year}")
 
 if 'checkboxes' not in st.session_state:
     st.session_state.checkboxes = []
