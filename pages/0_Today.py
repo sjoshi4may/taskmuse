@@ -1,28 +1,15 @@
 import streamlit as st
 import datetime as dt
 import sqlite3
+from utils import *
 
-conn = sqlite3.connect('./data/goals.db', check_same_thread=False)
-cur = conn.cursor()
+today = dt.datetime.today().strftime('%Y-%m-%d')
+print(today)
+conn, cur = connect_to_db('./data/goals.db')
 
-# create table
-cur.execute('''Create table if not exists daily_goals (goal_id INTEGER PRIMARY KEY, goal_text text, completed BOOLEAN)''')
-
-# Function to add a goal
-def add_goal(goal_text):
-    cur.execute('INSERT INTO daily_goals (goal_text, completed) VALUES (?, ?)', (goal_text, False))
-    conn.commit()
-
-# Function to delete a goal
-def delete_goal(goal_id):
-    cur.execute('DELETE FROM daily_goals WHERE goal_id = ?', (goal_id,))
-    conn.commit()
-
-# Function to update goal completion status
-def update_goal_status(goal_id, new_status):
-    cur.execute('UPDATE daily_goals SET completed = ? WHERE goal_id = ?', (new_status, goal_id))
-    conn.commit()
-
+# Setup the tables
+create_goals_table('daily_goals', cur)
+create_progress_table('daily_progress', cur)
 ## UI
 if 'goals' not in st.session_state:
     st.session_state.goals = []
@@ -32,43 +19,47 @@ if 'progress' not in st.session_state:
 
 tab1, tab2 = st.tabs(["Goals", 'Achievements'])
 with tab1:
-    st.title("Goals")
+    dat = dt.datetime.today().strftime('%Y-%m-%d')
+    st.title(dat)
     goal = st.text_input("Enter your goal...")
     # Button to add goal
-    if st.button('Add Goal'):
-        add_goal(goal)
+    if st.button('Add'):
+        add_goal(goal, cur, conn)
         st.success('Goal added!')
 
-    st.subheader('Your Goals')
-    goals = cur.execute('SELECT * FROM daily_goals').fetchall()
-    for goal_id, goal_text, completed in goals:
+    st.subheader('To do')
+    goals = cur.execute(f"SELECT * FROM daily_goals where completed=False and date_added = '{today}'").fetchall()
+    print(goals)
+    for goal_id, date_added, goal_text, completed in goals:
         col1, col2 = st.columns([0.8, 0.2])
         with col1:
-            new_status = st.checkbox(goal_text, value=completed, key=goal_id)
+            new_status = st.checkbox(goal_text, value=completed, key=f'checkbox_{goal_id}')
             if new_status != completed:
-                update_goal_status(goal_id, new_status)
+                update_goal_status(goal_id, new_status, cur, conn)
+                add_progress(goal_text, cur, conn)
         with col2:
             # Delete button for each goal
             if st.button('Delete', key=f'button_{goal_id}'):
-                delete_goal(goal_id)
+                delete_goal(goal_id, cur, conn)
                 st.rerun()
 
-            # Close the database connection
-    conn.close()
-
 with tab2:
-    st.title('Achievements')
-    with st.form(key="daily progress"):
-        progress = st.text_input("Enter what you've achieved today")
-        is_submit = st.form_submit_button("submit")
+    progress = st.text_input("Enter any completed tasks ...")
+    if st.button("Add achievement"):
+        add_progress(progress, cur, conn)
+        st.success('Achievement added!')
 
-    if is_submit:
-        st.session_state.progress.append(progress)
+    st.subheader('Finished Tasks')
 
-    with st.expander(label = "", expanded=True):
-        for i, progress in enumerate(st.session_state.progress):
-            st.markdown(f'-  {progress}')
-        for key, value in st.session_state.items():
-            if 'checkbox_' in key and value is True:
-                    k = key.split('_')[-1]
-                    st.markdown(f'- {st.session_state.goals[int(k)]}')
+    progresses = cur.execute(f"SELECT * FROM daily_progress where date_added = '{today}'").fetchall()
+
+    for date, progress_id, progress_text in progresses:
+        st.markdown(f"<p style='color:green;'> - {progress_text}</p>", unsafe_allow_html=True)
+
+    completed_goals = cur.execute(f'SELECT * FROM daily_goals WHERE completed=True and date_added = {today}').fetchall()
+    for goal_id, date_added, goal_text, completed in completed_goals:
+        st.markdown(f"<p style='color:green;'> - {goal_text}</p>", unsafe_allow_html=True)
+
+
+
+conn.close()
