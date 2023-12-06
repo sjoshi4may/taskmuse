@@ -4,7 +4,6 @@ import sqlite3
 from utils import *
 
 today = dt.datetime.today().strftime('%Y-%m-%d')
-print(today)
 conn, cur = connect_to_db('./data/goals.db')
 
 # Setup the tables
@@ -29,7 +28,6 @@ with tab1:
 
     st.subheader('To do')
     goals = cur.execute(f"SELECT * FROM daily_goals where completed=False and date_added = '{today}'").fetchall()
-    print(goals)
     for goal_id, date_added, goal_text, completed in goals:
         col1, col2 = st.columns([0.8, 0.2])
         with col1:
