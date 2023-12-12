@@ -9,6 +9,8 @@ conn, cur = connect_to_db('./data/goals.db')
 # Setup the tables
 create_goals_table('daily_goals', cur)
 create_progress_table('daily_progress', cur)
+
+
 ## UI
 if 'goals' not in st.session_state:
     st.session_state.goals = []
@@ -27,15 +29,17 @@ with tab1:
         st.success('Goal added!')
 
     st.subheader('To do')
-    goals = cur.execute(f"SELECT * FROM daily_goals where completed=False and date_added = '{today}'").fetchall()
+    goals = cur.execute(f"SELECT * FROM daily_goals where completed=False").fetchall()
     for goal_id, date_added, goal_text, completed in goals:
-        col1, col2 = st.columns([0.8, 0.2])
+        col1, col2, col3 = st.columns([0.2, 0.8,  0.2])
         with col1:
+            st.text(date_added)
+        with col2:
             new_status = st.checkbox(goal_text, value=completed, key=f'checkbox_{goal_id}')
             if new_status != completed:
                 update_goal_status(goal_id, new_status, cur, conn)
                 add_progress(goal_text, cur, conn)
-        with col2:
+        with col3:
             # Delete button for each goal
             if st.button('Delete', key=f'button_{goal_id}'):
                 delete_goal(goal_id, cur, conn)
@@ -57,7 +61,5 @@ with tab2:
     completed_goals = cur.execute(f'SELECT * FROM daily_goals WHERE completed=True and date_added = {today}').fetchall()
     for goal_id, date_added, goal_text, completed in completed_goals:
         st.markdown(f"<p style='color:green;'> - {goal_text}</p>", unsafe_allow_html=True)
-
-
 
 conn.close()

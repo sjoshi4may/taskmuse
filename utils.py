@@ -53,3 +53,25 @@ def update_progress(progress_id, progress_text, cur, conn):
     cur.execute('UPDATE daily_progress SET progress_text = ?, date_added = ? WHERE progress_id = ?',
                 (progress_text, dt.datetime.today().strftime('%Y-%m-%d'), progress_id))
     conn.commit()
+
+
+import streamlit as st
+
+
+def custom_task_status(label, complete_checkbox, in_progress_checkbox):
+    """
+    Custom Streamlit component to display task status with two checkboxes.
+
+    Args:
+        label (str): The label or task description.
+        complete_checkbox (bool): The state of the "Complete" checkbox.
+        in_progress_checkbox (bool): The state of the "In Progress" checkbox.
+
+    Returns:
+        (bool, bool): A tuple containing the updated states of both checkboxes.
+    """
+    st.write(label)
+    complete = st.checkbox("Complete", value=complete_checkbox)
+    in_progress = st.checkbox("In Progress", value=in_progress_checkbox)
+
+    return complete, in_progress
