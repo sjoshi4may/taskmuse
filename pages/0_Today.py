@@ -54,6 +54,7 @@ with tab2:
     if st.button("Add achievement"):
         add_progress(progress, cur, conn)
         st.success('Achievement added!')
+        st.rerun()
 
     st.subheader('Finished Tasks')
 
