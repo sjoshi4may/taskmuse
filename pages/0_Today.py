@@ -27,23 +27,27 @@ with tab1:
     if st.button('Add'):
         add_goal(goal, cur, conn)
         st.success('Goal added!')
+        st.rerun()
 
-    st.subheader('To do')
     goals = cur.execute(f"SELECT * FROM daily_goals where completed=False").fetchall()
-    for goal_id, date_added, goal_text, completed in goals:
-        col1, col2, col3 = st.columns([0.2, 0.8,  0.2])
-        with col1:
-            st.text(date_added)
-        with col2:
-            new_status = st.checkbox(goal_text, value=completed, key=f'checkbox_{goal_id}')
-            if new_status != completed:
-                update_goal_status(goal_id, new_status, cur, conn)
-                add_progress(goal_text, cur, conn)
-        with col3:
-            # Delete button for each goal
-            if st.button('Delete', key=f'button_{goal_id}'):
-                delete_goal(goal_id, cur, conn)
-                st.rerun()
+    with st.expander('To Do'):
+
+        for goal_id, date_added, goal_text, completed in goals:
+            col1, col2, col3 = st.columns([0.2, 0.8,  0.2])
+            with col1:
+                st.text(date_added)
+
+            with col2:
+                new_status = st.checkbox(goal_text, value=completed, key=f'checkbox_{goal_id}')
+                if new_status != completed:
+                    update_goal_status(goal_id, new_status, cur, conn)
+                    add_progress(goal_text, cur, conn)
+                    st.rerun()
+            with col3:
+                # Delete button for each goal
+                if st.button('Delete', key=f'button_{goal_id}'):
+                    delete_goal(goal_id, cur, conn)
+                    st.rerun()
 
 with tab2:
     progress = st.text_input("Enter any completed tasks ...")

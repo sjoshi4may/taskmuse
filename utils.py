@@ -22,6 +22,15 @@ def create_progress_table(table_name, cur):
         progress_id INTEGER PRIMARY KEY, 
         progress_text text)''')
 
+def create_monthly_table(table_name, cur):
+    cur.execute(
+        f'''Create table if not exists {table_name} 
+        (id INTEGER PRIMARY KEY,
+         date_added DATE,
+         month_added text,
+         goal_text text, 
+         completed BOOLEAN)''')
+
 # Function to add a goal
 def add_goal(goal_text, cur, conn):
     cur.execute('INSERT INTO daily_goals (date_added, goal_text, completed) VALUES (?, ?, ?)',
@@ -54,6 +63,10 @@ def update_progress(progress_id, progress_text, cur, conn):
                 (progress_text, dt.datetime.today().strftime('%Y-%m-%d'), progress_id))
     conn.commit()
 
+def add_monthly_goal(goal_text, month, cur, conn):
+    cur.execute('INSERT INTO monthly_goals (date_added, month_added, goal_text, completed) VALUES (?, ?, ?, ?)',
+                (dt.datetime.today().strftime('%Y-%m-%d'), month, goal_text, False))
+    conn.commit()
 
 import streamlit as st
 
