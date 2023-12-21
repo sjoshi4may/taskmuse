@@ -24,8 +24,12 @@ if st.button('submit'):
 col1, col2 = st.columns([0.5,0.5])
 with col1:
     with st.expander('To Do'):
-        for id, date, month, goal_text, _ in goals:
-            st.markdown(f'- {goal_text}')
+        for id, date, month, goal_text, completed in goals:
+            new_status = st.checkbox(goal_text, value=completed, key = f'month_checkbox{id}')
+            if new_status!=completed:
+                update_monthly_goal_status(id,new_status, cur, conn)
+                st.rerun()
+
 
 with col2:
     for _,_,_,goal_text,_ in completed_goals:

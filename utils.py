@@ -68,7 +68,10 @@ def add_monthly_goal(goal_text, month, cur, conn):
                 (dt.datetime.today().strftime('%Y-%m-%d'), month, goal_text, False))
     conn.commit()
 
-import streamlit as st
+# Function to update goal completion status
+def update_monthly_goal_status(goal_id, new_status, cur, conn):
+    cur.execute('UPDATE monthly_goals SET completed = ? WHERE id = ?', (new_status, goal_id))
+    conn.commit()
 
 
 def custom_task_status(label, complete_checkbox, in_progress_checkbox):
